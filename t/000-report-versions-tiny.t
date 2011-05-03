@@ -51,6 +51,7 @@ sub pmver {
     return sprintf('%-45s => %-10s%-15s%s', $module, $pmver, $wanted, "\n");
 }
 
+eval { $v .= pmver('DateTime::Format::Strptime','any version') };
 eval { $v .= pmver('Exporter','any version') };
 eval { $v .= pmver('File::Find','any version') };
 eval { $v .= pmver('File::Temp','any version') };
@@ -64,6 +65,7 @@ eval { $v .= pmver('POE::Filter::Stream','any version') };
 eval { $v .= pmver('POE::Wheel::ReadWrite','any version') };
 eval { $v .= pmver('POE::Wheel::SocketFactory','any version') };
 eval { $v .= pmver('Socket','any version') };
+eval { $v .= pmver('Test::Deep','any version') };
 eval { $v .= pmver('Test::More','0.88') };
 eval { $v .= pmver('parent','any version') };
 

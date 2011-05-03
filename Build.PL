@@ -10,6 +10,7 @@ my %module_build_args = (
     'File::Find' => '0',
     'File::Temp' => '0',
     'Module::Build' => '0.3601',
+    'Test::Deep' => '0',
     'Test::More' => '0.88'
   },
   'configure_requires' => {
@@ -20,12 +21,13 @@ my %module_build_args = (
     'Apocalypse <APOCAL@cpan.org>'
   ],
   'dist_name' => 'POE-Component-Client-SimpleFTP',
-  'dist_version' => '0.001',
+  'dist_version' => '0.002',
   'license' => 'perl',
   'module_name' => 'POE::Component::Client::SimpleFTP',
   'recommends' => {},
   'recursive_test_files' => 1,
   'requires' => {
+    'DateTime::Format::Strptime' => '0',
     'Exporter' => '0',
     'Moose::Util::TypeConstraints' => '0',
     'MooseX::POE::SweetArgs' => '0',

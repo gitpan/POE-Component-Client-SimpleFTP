@@ -15,6 +15,7 @@ my %WriteMakefileArgs = (
     'File::Find' => '0',
     'File::Temp' => '0',
     'ExtUtils::MakeMaker' => '6.31',
+    'Test::Deep' => '0',
     'Test::More' => '0.88'
   },
   'CONFIGURE_REQUIRES' => {
@@ -25,6 +26,7 @@ my %WriteMakefileArgs = (
   'LICENSE' => 'perl',
   'NAME' => 'POE::Component::Client::SimpleFTP',
   'PREREQ_PM' => {
+    'DateTime::Format::Strptime' => '0',
     'Exporter' => '0',
     'Moose::Util::TypeConstraints' => '0',
     'MooseX::POE::SweetArgs' => '0',
@@ -37,7 +39,7 @@ my %WriteMakefileArgs = (
     'Socket' => '0',
     'parent' => '0'
   },
-  'VERSION' => '0.001',
+  'VERSION' => '0.002',
   'test' => {
     'TESTS' => 't/*.t'
   }

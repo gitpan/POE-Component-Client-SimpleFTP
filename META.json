@@ -32,6 +32,7 @@
       },
       "runtime" : {
          "requires" : {
+            "DateTime::Format::Strptime" : 0,
             "Exporter" : 0,
             "Moose::Util::TypeConstraints" : 0,
             "MooseX::POE::SweetArgs" : 0,
@@ -50,6 +51,7 @@
          "requires" : {
             "File::Find" : 0,
             "File::Temp" : 0,
+            "Test::Deep" : 0,
             "Test::More" : "0.88"
          }
       }
@@ -57,11 +59,11 @@
    "provides" : {
       "POE::Component::Client::SimpleFTP" : {
          "file" : "lib/POE/Component/Client/SimpleFTP.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       },
       "POE::Component::Client::SimpleFTP::Utils" : {
          "file" : "lib/POE/Component/Client/SimpleFTP/Utils.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       }
    },
    "release_status" : "stable",
@@ -80,9 +82,10 @@
          "web" : "http://github.com/apocalypse/perl-poe-component-simpleftp"
       }
    },
-   "version" : "0.001",
+   "version" : "0.002",
    "x_BuiltWith" : {
       "modules" : {
+         "DateTime::Format::Strptime" : "1.5000",
          "Exporter" : "5.63",
          "File::Find" : "1.12",
          "File::Temp" : "0.22",
@@ -96,6 +99,7 @@
          "POE::Wheel::ReadWrite" : "1.299",
          "POE::Wheel::SocketFactory" : "1.299",
          "Socket" : "1.80",
+         "Test::Deep" : "0.108",
          "Test::More" : "0.96",
          "parent" : "0.224",
          "perl" : "NA(skipped: perl)"

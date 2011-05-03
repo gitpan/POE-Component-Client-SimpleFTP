@@ -9,7 +9,7 @@
 use strict; use warnings;
 package POE::Component::Client::SimpleFTP::Utils;
 BEGIN {
-  $POE::Component::Client::SimpleFTP::Utils::VERSION = '0.001';
+  $POE::Component::Client::SimpleFTP::Utils::VERSION = '0.002';
 }
 BEGIN {
   $POE::Component::Client::SimpleFTP::Utils::AUTHORITY = 'cpan:APOCAL';
@@ -21,6 +21,7 @@ use parent 'Exporter';
 our @EXPORT_OK = qw(
 	code_preliminary code_success code_intermediate code_failure code_tls
 	EOL
+	mdtm_parser feat_parser
 );
 our %EXPORT_TAGS = (
 	'code' => [
@@ -33,15 +34,78 @@ our %EXPORT_TAGS = (
 
 
 
+# helper sub to validate a code before doing the actual comparison
+sub _check_code {
+	return if ! defined $_[0];
+	return if length( $_[0] ) != 3;
+	return if $_[0] !~ /^\d+$/;
+	return 1;
+}
+
 # helper subs to figure out what a code is
-sub code_preliminary { return substr( $_[0], 0, 1 ) == 1 }
-sub code_success { return substr( $_[0], 0, 1 ) == 2 }
-sub code_intermediate { return substr( $_[0], 0, 1 ) == 3 }
-sub code_failure { return $_[0] =~ /^[45]/ }
-sub code_tls { return substr( $_[0], 0, 1 ) == 6 }
+sub code_preliminary { return if ! _check_code( $_[0] ); return substr( $_[0], 0, 1 ) == 1 }
+sub code_success { return if ! _check_code( $_[0] ); return substr( $_[0], 0, 1 ) == 2 }
+sub code_intermediate { return if ! _check_code( $_[0] ); return substr( $_[0], 0, 1 ) == 3 }
+sub code_failure { return if ! _check_code( $_[0] ); return $_[0] =~ /^[45]/ }
+sub code_tls { return if ! _check_code( $_[0] ); return substr( $_[0], 0, 1 ) == 6 }
 
 
 sub EOL () { "\015\012" }
+
+
+sub mdtm_parser {
+	my $mdtm = shift;
+
+	# check to see if we received microseconds
+	my $microseconds;
+	if ( $mdtm =~ /^(\d+)\.(\d+)$/ ) {
+		$mdtm = $1;
+		$microseconds = $2;
+	}
+
+	require DateTime::Format::Strptime;
+	my $strp = DateTime::Format::Strptime->new(
+		# RFC 3659 pattern: YYYYMMDDHHMMSS.sss
+		pattern => "%Y%m%d%H%M%S",
+		on_error => 'undef',
+	);
+	my $dt = $strp->parse_datetime( $mdtm );
+	if ( defined $dt ) {
+		if ( defined $microseconds ) {
+			# add it to the object!
+			$dt->set_nanosecond( $microseconds * 1000 );
+		}
+		return $dt;
+	} else {
+		return;
+	}
+}
+
+
+sub feat_parser {
+	my $feat = shift;
+
+	# validation
+	return () if ! defined $feat;
+	return () if ! length( $feat );
+
+	# it should be a string with newlines in it separating the FEAT replies
+	my @data = split( "\n", $feat );
+	return () if scalar @data <= 1;
+
+	# remove the first/last elements as they are informational text
+	shift @data;
+	pop @data;
+
+	# remove any whitespace
+	foreach my $f ( @data ) {
+		$f =~ s/^\s+//;
+		$f =~ s/\s+$//;
+	}
+
+	# all done!
+	return @data;
+}
 
 1;
 
@@ -59,7 +123,7 @@ POE::Component::Client::SimpleFTP::Utils - Miscellaneous FTP utility functions
 
 =head1 VERSION
 
-  This document describes v0.001 of POE::Component::Client::SimpleFTP::Utils - released May 02, 2011 as part of POE-Component-Client-SimpleFTP.
+  This document describes v0.002 of POE::Component::Client::SimpleFTP::Utils - released May 03, 2011 as part of POE-Component-Client-SimpleFTP.
 
 =head1 SYNOPSIS
 
@@ -106,6 +170,20 @@ Tests whether the code is a 6yz code ( Protected reply ) and returns a boolean v
 =head2 EOL
 
 Returns the end-of-line terminator as specified in RFC 959
+
+=head2 mdtm_parser
+
+Returns a L<DateTime> object representing the modification timestamp of a file. Useful for parsing L<POE::Component::Client::SimpleFTP/mdtm> replies!
+
+NOTE: The MDTM format does not supply a timezone, you have to process that yourself!
+
+On an error returns undef.
+
+=head2 feat_parser
+
+Returns an array of FEAT capabilities present on the server. Useful for parsing L<POE::Component::Client::SimpleFTP/feat> replies!
+
+On an error returns an empty array.
 
 =head1 SEE ALSO
 

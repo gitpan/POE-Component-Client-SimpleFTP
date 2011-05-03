@@ -1,3 +1,39 @@
+==============================
+9999-99-99 99:99:99 +0000 HEAD
+==============================
+
+  commit 499d82a1db6262368cddc32eb83acd745dff8af2
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Tue May 3 13:09:51 2011 -0700
+  
+    fix perlcritic nit
+
+  commit 4917b02b0f33c968c9d3d850c31380429a1d760b
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Tue May 3 13:04:51 2011 -0700
+  
+    add feat_parser and rename mdtm_datetime to mdtm_parser for
+    consistency
+
+  commit aee80c49a3207116b3fe7fadc7e3e244005c8a57
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Tue May 3 10:15:21 2011 -0700
+  
+    fix multiline parsing so it correctly includes the first/last line of
+    text
+
+  commit 9c5cf2ae7ff90d4591cdd2c89a65a039bfa7ca7d
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Tue May 3 10:00:22 2011 -0700
+  
+    add mdtm_datetime and pod updates
+
+  commit c7fc14def88e3ad06d20173ffa3db5e8e4f53c60
+  Author: Apocalypse <perl@0ne.us>
+  Date:   Tue May 3 08:23:20 2011 -0700
+  
+    add missing rmdir docs 
+
 ===================================
 End of changes in the last 365 days
 ===================================

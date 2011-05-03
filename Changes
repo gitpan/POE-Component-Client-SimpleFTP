@@ -1,4 +1,16 @@
 Revision history for Perl module POE-Component-Client-SimpleFTP
 
+0.002
+	Released: 2011-05-03 20:10:11 UTC
+
+	Add missing documentation for the rmdir command
+	Add mdtm_parser to ::Utils for the MDTM command
+	Add feat_parser to ::Utils for the FEAT command
+	Add a test for the ::Utils module
+	Improve the pod for commands with sample data
+	Fix multi-line parsing logic so it correctly includes the first/last lines of the reply
+
 0.001
 	Released: 2011-05-03 06:13:35 UTC
+
+	initial release

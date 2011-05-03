@@ -9,7 +9,7 @@
 use strict; use warnings;
 package POE::Component::Client::SimpleFTP;
 BEGIN {
-  $POE::Component::Client::SimpleFTP::VERSION = '0.001';
+  $POE::Component::Client::SimpleFTP::VERSION = '0.002';
 }
 BEGIN {
   $POE::Component::Client::SimpleFTP::AUTHORITY = 'cpan:APOCAL';
@@ -610,7 +610,7 @@ event cmd_rw_input => sub {
 		if ( length $minus ) {
 			# begin of multi-line reply
 			warn "begin of multi-line($code): '$string'\n" if DEBUG;
-			$self->input_buffer( '' );
+			$self->input_buffer( $string );
 			$self->input_buffer_code( $code );
 			return;
 		} else {
@@ -621,7 +621,7 @@ event cmd_rw_input => sub {
 					die "ftpd sent invalid reply: $input";
 				} else {
 					warn "end of multi-line: '$string'\n" if DEBUG;
-					$line = $self->input_buffer;
+					$line = $self->input_buffer . "\n" . $input;
 					$self->input_buffer( undef );
 				}
 			} else {
@@ -634,11 +634,7 @@ event cmd_rw_input => sub {
 			# per the RFC, the first character should be padded by a space if needed
 			$input =~ s/^\s//;
 			warn "got multi-line input: '$input'\n" if DEBUG;
-			if ( length( $self->input_buffer ) ) {
-				$self->input_buffer( $self->input_buffer . "\n" . $input );
-			} else {
-				$self->input_buffer( $input );
-			}
+			$self->input_buffer( $self->input_buffer . "\n" . $input );
 			return;
 		} else {
 			die "ftpd sent invalid reply: $input";
@@ -1197,7 +1193,7 @@ POE::Component::Client::SimpleFTP - A simple FTP client library for POE
 
 =head1 VERSION
 
-  This document describes v0.001 of POE::Component::Client::SimpleFTP - released May 02, 2011 as part of POE-Component-Client-SimpleFTP.
+  This document describes v0.002 of POE::Component::Client::SimpleFTP - released May 03, 2011 as part of POE-Component-Client-SimpleFTP.
 
 =head1 SYNOPSIS
 
@@ -1258,7 +1254,8 @@ want to retry the connection, you have to make a new object.
 
 The first argument is the error code, and the 2nd argument is the error string.
 
-Example args: 0, "timedout"
+Example code: 0
+Example reply: timedout
 
 =head3 login_error
 
@@ -1267,7 +1264,8 @@ want to retry the connection, you have to make a new object.
 
 The first argument is the error code, and the 2nd argument is the error string.
 
-Example args: 530, "Login incorrect."
+Example code: 530
+Example reply: Login incorrect.
 
 =head2 Simple Commands
 
@@ -1306,6 +1304,9 @@ Changes the working directory.
 
 Arguments: the path to change to ( required )
 
+Example code: 250
+Example reply: Directory successfully changed.
+
 =head3 cd
 
 An alias for L</cwd>
@@ -1315,6 +1316,9 @@ An alias for L</cwd>
 Deletes a file.
 
 Arguments: the file to delete ( required )
+
+Example code: 250
+Example reply: Delete operation successful.
 
 =head3 delete
 
@@ -1332,6 +1336,9 @@ absolute paths so you are sure that the server is creating the directory in the 
 Remember, the FTP protocol doesn't support recursive directory creation! If C</foo> exists but C</foo/bar> doesn't, then you cannot create
 C</foo/bar/baz>!
 
+Example code: 257
+Example reply: "/foo" created
+
 =head3 mkdir
 
 An alias for L</mkd>
@@ -1345,8 +1352,12 @@ Arguments: the directory path to delete ( required )
 You can supply an absolute path or a relative path. It is up to the server to figure out where to create the directory. It's easier to use
 absolute paths so you are sure that the server is creating the directory in the right place!
 
-Remember, the FTP protocol doesn't support deleting a directory if it has contents in it! If C</foo/bar> exists then you cannot delete
-C</foo>!
+Example code: 250
+Example reply: Remove directory operation successful.
+
+=head3 rmdir
+
+An alias for L</rmd>
 
 =head3 cdup
 
@@ -1356,11 +1367,17 @@ Remember, there might be symlinks or other bizarre stuff going on behind the sce
 
 Arguments: none
 
+Example code: 250
+Example reply: Directory successfully changed.
+
 =head3 pwd
 
 Prints the current working directory.
 
 Arguments: none
+
+Example code: 257
+Example reply: "/"
 
 =head3 rename
 
@@ -1370,13 +1387,16 @@ Arguments: the old filename and the new filename
 
 Remember, the pathnames must exist and is a valid target. Best to send absolute paths!
 
+Example code: 250
+Example reply: Rename successful.
+
 =head3 mv
 
 An alias for L</rename>
 
 =head3 quit
 
-Disconnects from the ftp server. Behaves differently depending on the context when this command is received. After this command is sent, this
+Disconnects from the server. Behaves differently depending on the context when this command is received. After this command is sent, this
 module will destroy itself and not send any more events to your session.
 
 If this module isn't processing anything it will send the QUIT command and gracefully shutdown when it receives the server reply.
@@ -1403,6 +1423,9 @@ Executes a no-operation command. Useful to keep the connection open or to get th
 
 Arguments: none
 
+Example code: 200
+Example reply: NOOP ok.
+
 =head3 quot
 
 Sends a quoted command to the server. Useful for sending commands that this module doesn't support.
@@ -1421,32 +1444,66 @@ Gets the server's help output for a command.
 
 Arguments: optional command to ask for help
 
+Example code: 214
+Example reply:
+
+	The following commands are recognized.
+	ABOR ACCT ALLO APPE CDUP CWD  DELE EPRT EPSV FEAT HELP LIST MDTM MKD
+	MODE NLST NOOP OPTS PASS PASV PORT PWD  QUIT REIN REST RETR RMD  RNFR
+	RNTO SITE SIZE SMNT STAT STOR STOU STRU SYST TYPE USER XCUP XCWD XMKD
+	XPWD XRMD
+	Help OK.
+
 =head3 site
 
-Executes a specific command that the server supports. Consult your ftp administrator or the document for the ftp software for more information.
+Executes a specific command that the server supports. Consult your ftp administrator or the document for the ftpd software for more information.
 
 Arguments: the command to execute + any optional arguments.
 
+Example code: 500
+Example reply: Unknown SITE command.
+
 =head3 stat
 
-Receives some informational text about the current status of the ftp connection.
+Receives some informational text about the current status of the connection.
 
 BEWARE: While the RFC says this command can be sent while a data transfer is in progress, this is unimplemented!
 
 Arguments: none
 
+Example code: 211
+Example reply:
+
+	FTP server status:
+	Connected to 192.168.0.199
+	Logged in as apoc
+	TYPE: ASCII
+	No session bandwidth limit
+	Session timeout in seconds is 300
+	Control connection is plain text
+	Data connections will be plain text
+	At session startup, client count was 1
+	vsFTPd 2.2.0 - secure, fast, stable
+	End of status
+
 =head3 syst
 
-Gets the system information of the ftp server. Usually returns something like C<UNIX Type: L8>.
+Gets the system information of the server.
 
 Arguments: none
 
+Example code: 215
+Example reply: UNIX Type: L8
+
 =head3 acct
 
-Send the account information for your login. Generally not used, but if your ftp requires it you should send this immediately after getting the
+Send the account information for your login. Generally not used, but if your server requires it you should send this immediately after getting the
 L</authenticated> event.
 
 Arguments: your account information
+
+Example code: 502
+Example reply: ACCT not implemented.
 
 =head3 smnt
 
@@ -1454,11 +1511,19 @@ Mounts a different filesystem volume on your account. Generally not used.
 
 Arguments: a pathname to mount or system-specific string
 
+Example code: 502
+Example reply: SMNT not implemented.
+
 =head3 mdtm
 
-Gets the modification time of a file in UNIX timestamp format. Not supported by all servers! ( RFC 3659 )
+Gets the modification time of a file. Not supported by all servers! ( RFC 3659 )
 
 Arguments: the file to query
+
+Example code: 213
+Example reply: 20110502230157
+
+You can use the L<POE::Component::Client::SimpleFTP::Utils/mdtm_parser> function to convert it into a L<DateTime> object.
 
 =head3 size
 
@@ -1466,11 +1531,30 @@ Gets the size of a file in bytes. Not supported by all servers! ( RFC 3659 )
 
 Arguments: the file to query
 
+Example code: 213
+Example reply: 48
+
 =head3 feat
 
 Queries the FEAT capabilities of the server. Not supported by all servers! ( RFC 2389 )
 
 Arguments: none
+
+Example code: 211
+Example reply:
+
+	Features:
+	EPRT
+	EPSV
+	MDTM
+	PASV
+	REST STREAM
+	SIZE
+	TVFS
+	UTF8
+	End
+
+You can use the L<POE::Component::Client::SimpleFTP::Utils/feat_parser> function to convert it into an array of features.
 
 =head3 features
 
@@ -1481,6 +1565,9 @@ An alias for L</feat>
 Sets an option for the current session. Not supported by all servers! ( RFC 2389 )
 
 Arguments: the option to set
+
+Example code: 501
+Example reply: Option not understood.
 
 =head3 options
 
@@ -1736,6 +1823,7 @@ can be done in user-space but should be implemented here to make it "simpler" :)
 	* use POE::Filter::Ls for parsing ( need to improve it first hah )
 	* encoded pathnames ( translate \012 in filename to \000 as per RFC 959 )
 	* security stuff - http://cr.yp.to/ftp/security.html
+	* event prefix ( so you get ftp_cd events instead of cd ) for easier event management
 
 =head2 RFC 959 "FILE TRANSFER PROTOCOL (FTP)"
 
