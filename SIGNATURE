@@ -1,0 +1,44 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.66.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 0c6a4f7a9f7c363b286502dd84a31dcfdda0efb3 Build.PL
+SHA1 29373dfdb67ffc983b6f3a0d37ca3d491e722b85 Changes
+SHA1 f7229c4d69aace7b238ecf706dcd9ee588bcd6d3 CommitLog
+SHA1 53c8c22c6635f886969e74338ab155e851727554 INSTALL
+SHA1 263360e99a0de4d587fedefe1a919dcf61af1d10 LICENSE
+SHA1 909ebb65f59c9fa497abd8f68f117c38d7801c2f MANIFEST
+SHA1 9dfc07c5655b958e800189837f3ddd37ca050bfe MANIFEST.SKIP
+SHA1 4f97c5a4800f2e6992119e41ecaacd57c329d7c5 META.json
+SHA1 833f6b1c28c7a18f69575ed88cddfeb344f23a74 META.yml
+SHA1 3a61564e58c1d3d9de3d8632d787e4124a66021d Makefile.PL
+SHA1 95e088e336d2ee47be76bee24f829d8f55d7ba24 README
+SHA1 fa544583afe3fa72e37bf80a1c4358052ee7c800 dist.ini
+SHA1 5e5af84d1eb400b1ebe54671da3acc00d9b3ebbb examples/feat.pl
+SHA1 e20cf3014863584c8f5f289af7af6731f2f32766 examples/get.pl
+SHA1 0d4b1b0e0abf9bba72b2adad835d1bdb77e4282f examples/ls.pl
+SHA1 6b05a61b831113fd2934e33f481e6257640c5c9a examples/put.pl
+SHA1 10c5dddee43ef4431d09e49392b2570cf10f5e9d lib/POE/Component/Client/SimpleFTP.pm
+SHA1 a54ea3f216b3e4f14a09ec35796afa4e61b3513e lib/POE/Component/Client/SimpleFTP/Utils.pm
+SHA1 abe58196b1879d329f32d159c2320ab438e1b3dc t/00-compile.t
+SHA1 556741d46b7de6c036a1c74b653ad55db8dcf66f t/000-report-versions-tiny.t
+SHA1 a65db0598d757e869a3071b553e1464ca9f91463 t/apocalypse.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAk2/nRkACgkQGfr7vsGKgxxJAgCgxTAuHmVz+FR1ZKxDxCAKWiiF
+h+0AoKqVTWDJmP6zh+U3nZKw4ZAkBpRC
+=KOa9
+-----END PGP SIGNATURE-----
