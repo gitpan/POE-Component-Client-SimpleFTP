@@ -21,7 +21,7 @@ my %module_build_args = (
     'Apocalypse <APOCAL@cpan.org>'
   ],
   'dist_name' => 'POE-Component-Client-SimpleFTP',
-  'dist_version' => '0.002',
+  'dist_version' => '0.003',
   'license' => 'perl',
   'module_name' => 'POE::Component::Client::SimpleFTP',
   'recommends' => {},

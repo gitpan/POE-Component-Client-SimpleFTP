@@ -9,7 +9,7 @@
 use strict; use warnings;
 package POE::Component::Client::SimpleFTP::Utils;
 BEGIN {
-  $POE::Component::Client::SimpleFTP::Utils::VERSION = '0.002';
+  $POE::Component::Client::SimpleFTP::Utils::VERSION = '0.003';
 }
 BEGIN {
   $POE::Component::Client::SimpleFTP::Utils::AUTHORITY = 'cpan:APOCAL';
@@ -123,7 +123,7 @@ POE::Component::Client::SimpleFTP::Utils - Miscellaneous FTP utility functions
 
 =head1 VERSION
 
-  This document describes v0.002 of POE::Component::Client::SimpleFTP::Utils - released May 03, 2011 as part of POE-Component-Client-SimpleFTP.
+  This document describes v0.003 of POE::Component::Client::SimpleFTP::Utils - released May 04, 2011 as part of POE-Component-Client-SimpleFTP.
 
 =head1 SYNOPSIS
 

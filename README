@@ -2,7 +2,7 @@ NAME
     POE::Component::Client::SimpleFTP - A simple FTP client library for POE
 
 VERSION
-      This document describes v0.002 of POE::Component::Client::SimpleFTP - released May 03, 2011 as part of POE-Component-Client-SimpleFTP.
+      This document describes v0.003 of POE::Component::Client::SimpleFTP - released May 04, 2011 as part of POE-Component-Client-SimpleFTP.
 
 SYNOPSIS
             # A simple FTP client logging in to a server
@@ -72,7 +72,13 @@ DESCRIPTION
     The first argument is the error code, and the 2nd argument is the error
     string.
 
-    Example code: 0 Example reply: timedout
+    The code "0" is used here, because we never got a reply from the server.
+    However, it is nice to have consistency with the other event handlers,
+    so it is supplied.
+
+    Example code: 0
+
+    Example reply: timedout
 
    login_error
     This event is sent when there's an error trying to login to the server.
@@ -82,7 +88,9 @@ DESCRIPTION
     The first argument is the error code, and the 2nd argument is the error
     string.
 
-    Example code: 530 Example reply: Login incorrect.
+    Example code: 530
+
+    Example reply: Login incorrect.
 
   Simple Commands
     This is a class of commands that can be sent to the server after
@@ -125,7 +133,9 @@ DESCRIPTION
 
     Arguments: the path to change to ( required )
 
-    Example code: 250 Example reply: Directory successfully changed.
+    Example code: 250
+
+    Example reply: Directory successfully changed.
 
    cd
     An alias for "cwd"
@@ -135,7 +145,9 @@ DESCRIPTION
 
     Arguments: the file to delete ( required )
 
-    Example code: 250 Example reply: Delete operation successful.
+    Example code: 250
+
+    Example reply: Delete operation successful.
 
    delete
     An alias for "dele"
@@ -154,7 +166,9 @@ DESCRIPTION
     If "/foo" exists but "/foo/bar" doesn't, then you cannot create
     "/foo/bar/baz"!
 
-    Example code: 257 Example reply: "/foo" created
+    Example code: 257
+
+    Example reply: "/foo" created
 
    mkdir
     An alias for "mkd"
@@ -165,11 +179,13 @@ DESCRIPTION
     Arguments: the directory path to delete ( required )
 
     You can supply an absolute path or a relative path. It is up to the
-    server to figure out where to create the directory. It's easier to use
-    absolute paths so you are sure that the server is creating the directory
-    in the right place!
+    server to figure out where to delete the directory. It's easier to use
+    absolute paths so you are sure that the server is deleting the right
+    directory!
 
-    Example code: 250 Example reply: Remove directory operation successful.
+    Example code: 250
+
+    Example reply: Remove directory operation successful.
 
    rmdir
     An alias for "rmd"
@@ -182,14 +198,18 @@ DESCRIPTION
 
     Arguments: none
 
-    Example code: 250 Example reply: Directory successfully changed.
+    Example code: 250
+
+    Example reply: Directory successfully changed.
 
    pwd
     Prints the current working directory.
 
     Arguments: none
 
-    Example code: 257 Example reply: "/"
+    Example code: 257
+
+    Example reply: "/"
 
    rename
     Renames a target file to a new name.
@@ -199,7 +219,9 @@ DESCRIPTION
     Remember, the pathnames must exist and is a valid target. Best to send
     absolute paths!
 
-    Example code: 250 Example reply: Rename successful.
+    Example code: 250
+
+    Example reply: Rename successful.
 
    mv
     An alias for "rename"
@@ -233,7 +255,9 @@ DESCRIPTION
 
     Arguments: none
 
-    Example code: 200 Example reply: NOOP ok.
+    Example code: 200
+
+    Example reply: NOOP ok.
 
    quot
     Sends a quoted command to the server. Useful for sending commands that
@@ -251,7 +275,9 @@ DESCRIPTION
 
     Arguments: optional command to ask for help
 
-    Example code: 214 Example reply:
+    Example code: 214
+
+    Example reply:
 
             The following commands are recognized.
             ABOR ACCT ALLO APPE CDUP CWD  DELE EPRT EPSV FEAT HELP LIST MDTM MKD
@@ -267,7 +293,9 @@ DESCRIPTION
 
     Arguments: the command to execute + any optional arguments.
 
-    Example code: 500 Example reply: Unknown SITE command.
+    Example code: 500
+
+    Example reply: Unknown SITE command.
 
    stat
     Receives some informational text about the current status of the
@@ -278,7 +306,9 @@ DESCRIPTION
 
     Arguments: none
 
-    Example code: 211 Example reply:
+    Example code: 211
+
+    Example reply:
 
             FTP server status:
             Connected to 192.168.0.199
@@ -297,7 +327,9 @@ DESCRIPTION
 
     Arguments: none
 
-    Example code: 215 Example reply: UNIX Type: L8
+    Example code: 215
+
+    Example reply: UNIX Type: L8
 
    acct
     Send the account information for your login. Generally not used, but if
@@ -306,7 +338,9 @@ DESCRIPTION
 
     Arguments: your account information
 
-    Example code: 502 Example reply: ACCT not implemented.
+    Example code: 502
+
+    Example reply: ACCT not implemented.
 
    smnt
     Mounts a different filesystem volume on your account. Generally not
@@ -314,7 +348,9 @@ DESCRIPTION
 
     Arguments: a pathname to mount or system-specific string
 
-    Example code: 502 Example reply: SMNT not implemented.
+    Example code: 502
+
+    Example reply: SMNT not implemented.
 
    mdtm
     Gets the modification time of a file. Not supported by all servers! (
@@ -322,7 +358,9 @@ DESCRIPTION
 
     Arguments: the file to query
 
-    Example code: 213 Example reply: 20110502230157
+    Example code: 213
+
+    Example reply: 20110502230157
 
     You can use the "mdtm_parser" in
     POE::Component::Client::SimpleFTP::Utils function to convert it into a
@@ -334,7 +372,9 @@ DESCRIPTION
 
     Arguments: the file to query
 
-    Example code: 213 Example reply: 48
+    Example code: 213
+
+    Example reply: 48
 
    feat
     Queries the FEAT capabilities of the server. Not supported by all
@@ -342,7 +382,9 @@ DESCRIPTION
 
     Arguments: none
 
-    Example code: 211 Example reply:
+    Example code: 211
+
+    Example reply:
 
             Features:
             EPRT
@@ -368,7 +410,9 @@ DESCRIPTION
 
     Arguments: the option to set
 
-    Example code: 501 Example reply: Option not understood.
+    Example code: 501
+
+    Example reply: Option not understood.
 
    options
     An alias for "opts"
@@ -498,7 +542,7 @@ ATTRIBUTES
     The alias this component will use. You can send commands to the ftpd in
     2 ways:
 
-            my $ftp = POE::Component::Client::SimpleFTP->new( ... );
+            my $ftp = POE::Component::Client::SimpleFTP->new( alias => "ftp", ... );
             $poe_kernel->post( 'ftp', 'cd', 'foobar' );
 
             # Or, you can use the yield sub:
@@ -619,6 +663,7 @@ Unimplemented Commands/Actions/Features
             * encoded pathnames ( translate \012 in filename to \000 as per RFC 959 )
             * security stuff - http://cr.yp.to/ftp/security.html
             * event prefix ( so you get ftp_cd events instead of cd ) for easier event management
+            * strict command validation ( we don't check if the command requires 0, 1, or N args )
 
   RFC 959 "FILE TRANSFER PROTOCOL (FTP)"
             * REIN ( not allowed, as it generally screws up - just reconnect! )
@@ -643,17 +688,17 @@ Unimplemented Commands/Actions/Features
             * ENC ( not needed with TLS? )
 
   RFC 2389 "Feature negotiation mechanism for the File Transfer Protocol"
-            * FEAT ( no formal parser but we can send the command )
+            * The entire RFC is implemented
 
   RFC 2428 "FTP Extensions for IPv6 and NATs"
             * EPRT
             * EPSV
 
   RFC 2577 "FTP Security Considerations"
-            * the entire thing :)
+            * unimplemented
 
   RFC 2640 "Internationalization of the File Transfer Protocol"
-            * the entire thing :)
+            * unimplemented
 
   RFC 3659 "Extensions to FTP"
             * REST ( same reason as the RFC 959 one )
@@ -661,7 +706,10 @@ Unimplemented Commands/Actions/Features
             * MLSD
 
   RFC 4217 "Securing FTP with TLS"
-            * the entire thing except for what is implemented in 2228 :)
+            * unimplemented except for what is implemented in 2228 :)
+
+  RFC 5796 "FTP Command and Extension Registry"
+            * No need to implement this, it is for servers only
 
 SUPPORT
   Perldoc

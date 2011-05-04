@@ -9,7 +9,7 @@
 use strict; use warnings;
 package POE::Component::Client::SimpleFTP;
 BEGIN {
-  $POE::Component::Client::SimpleFTP::VERSION = '0.002';
+  $POE::Component::Client::SimpleFTP::VERSION = '0.003';
 }
 BEGIN {
   $POE::Component::Client::SimpleFTP::AUTHORITY = 'cpan:APOCAL';
@@ -1193,7 +1193,7 @@ POE::Component::Client::SimpleFTP - A simple FTP client library for POE
 
 =head1 VERSION
 
-  This document describes v0.002 of POE::Component::Client::SimpleFTP - released May 03, 2011 as part of POE-Component-Client-SimpleFTP.
+  This document describes v0.003 of POE::Component::Client::SimpleFTP - released May 04, 2011 as part of POE-Component-Client-SimpleFTP.
 
 =head1 SYNOPSIS
 
@@ -1254,7 +1254,11 @@ want to retry the connection, you have to make a new object.
 
 The first argument is the error code, and the 2nd argument is the error string.
 
+The code "0" is used here, because we never got a reply from the server. However, it is nice to have consistency with the other
+event handlers, so it is supplied.
+
 Example code: 0
+
 Example reply: timedout
 
 =head3 login_error
@@ -1265,6 +1269,7 @@ want to retry the connection, you have to make a new object.
 The first argument is the error code, and the 2nd argument is the error string.
 
 Example code: 530
+
 Example reply: Login incorrect.
 
 =head2 Simple Commands
@@ -1305,6 +1310,7 @@ Changes the working directory.
 Arguments: the path to change to ( required )
 
 Example code: 250
+
 Example reply: Directory successfully changed.
 
 =head3 cd
@@ -1318,6 +1324,7 @@ Deletes a file.
 Arguments: the file to delete ( required )
 
 Example code: 250
+
 Example reply: Delete operation successful.
 
 =head3 delete
@@ -1337,6 +1344,7 @@ Remember, the FTP protocol doesn't support recursive directory creation! If C</f
 C</foo/bar/baz>!
 
 Example code: 257
+
 Example reply: "/foo" created
 
 =head3 mkdir
@@ -1349,10 +1357,11 @@ Removes a directory.
 
 Arguments: the directory path to delete ( required )
 
-You can supply an absolute path or a relative path. It is up to the server to figure out where to create the directory. It's easier to use
-absolute paths so you are sure that the server is creating the directory in the right place!
+You can supply an absolute path or a relative path. It is up to the server to figure out where to delete the directory. It's easier to use
+absolute paths so you are sure that the server is deleting the right directory!
 
 Example code: 250
+
 Example reply: Remove directory operation successful.
 
 =head3 rmdir
@@ -1368,6 +1377,7 @@ Remember, there might be symlinks or other bizarre stuff going on behind the sce
 Arguments: none
 
 Example code: 250
+
 Example reply: Directory successfully changed.
 
 =head3 pwd
@@ -1377,6 +1387,7 @@ Prints the current working directory.
 Arguments: none
 
 Example code: 257
+
 Example reply: "/"
 
 =head3 rename
@@ -1388,6 +1399,7 @@ Arguments: the old filename and the new filename
 Remember, the pathnames must exist and is a valid target. Best to send absolute paths!
 
 Example code: 250
+
 Example reply: Rename successful.
 
 =head3 mv
@@ -1424,6 +1436,7 @@ Executes a no-operation command. Useful to keep the connection open or to get th
 Arguments: none
 
 Example code: 200
+
 Example reply: NOOP ok.
 
 =head3 quot
@@ -1445,6 +1458,7 @@ Gets the server's help output for a command.
 Arguments: optional command to ask for help
 
 Example code: 214
+
 Example reply:
 
 	The following commands are recognized.
@@ -1461,6 +1475,7 @@ Executes a specific command that the server supports. Consult your ftp administr
 Arguments: the command to execute + any optional arguments.
 
 Example code: 500
+
 Example reply: Unknown SITE command.
 
 =head3 stat
@@ -1472,6 +1487,7 @@ BEWARE: While the RFC says this command can be sent while a data transfer is in 
 Arguments: none
 
 Example code: 211
+
 Example reply:
 
 	FTP server status:
@@ -1493,6 +1509,7 @@ Gets the system information of the server.
 Arguments: none
 
 Example code: 215
+
 Example reply: UNIX Type: L8
 
 =head3 acct
@@ -1503,6 +1520,7 @@ L</authenticated> event.
 Arguments: your account information
 
 Example code: 502
+
 Example reply: ACCT not implemented.
 
 =head3 smnt
@@ -1512,6 +1530,7 @@ Mounts a different filesystem volume on your account. Generally not used.
 Arguments: a pathname to mount or system-specific string
 
 Example code: 502
+
 Example reply: SMNT not implemented.
 
 =head3 mdtm
@@ -1521,6 +1540,7 @@ Gets the modification time of a file. Not supported by all servers! ( RFC 3659 )
 Arguments: the file to query
 
 Example code: 213
+
 Example reply: 20110502230157
 
 You can use the L<POE::Component::Client::SimpleFTP::Utils/mdtm_parser> function to convert it into a L<DateTime> object.
@@ -1532,6 +1552,7 @@ Gets the size of a file in bytes. Not supported by all servers! ( RFC 3659 )
 Arguments: the file to query
 
 Example code: 213
+
 Example reply: 48
 
 =head3 feat
@@ -1541,6 +1562,7 @@ Queries the FEAT capabilities of the server. Not supported by all servers! ( RFC
 Arguments: none
 
 Example code: 211
+
 Example reply:
 
 	Features:
@@ -1567,6 +1589,7 @@ Sets an option for the current session. Not supported by all servers! ( RFC 2389
 Arguments: the option to set
 
 Example code: 501
+
 Example reply: Option not understood.
 
 =head3 options
@@ -1699,7 +1722,7 @@ An alias for L</stor>
 
 The alias this component will use. You can send commands to the ftpd in 2 ways:
 
-	my $ftp = POE::Component::Client::SimpleFTP->new( ... );
+	my $ftp = POE::Component::Client::SimpleFTP->new( alias => "ftp", ... );
 	$poe_kernel->post( 'ftp', 'cd', 'foobar' );
 
 	# Or, you can use the yield sub:
@@ -1824,6 +1847,7 @@ can be done in user-space but should be implemented here to make it "simpler" :)
 	* encoded pathnames ( translate \012 in filename to \000 as per RFC 959 )
 	* security stuff - http://cr.yp.to/ftp/security.html
 	* event prefix ( so you get ftp_cd events instead of cd ) for easier event management
+	* strict command validation ( we don't check if the command requires 0, 1, or N args )
 
 =head2 RFC 959 "FILE TRANSFER PROTOCOL (FTP)"
 
@@ -1851,7 +1875,7 @@ can be done in user-space but should be implemented here to make it "simpler" :)
 
 =head2 RFC 2389 "Feature negotiation mechanism for the File Transfer Protocol"
 
-	* FEAT ( no formal parser but we can send the command )
+	* The entire RFC is implemented
 
 =head2 RFC 2428 "FTP Extensions for IPv6 and NATs"
 
@@ -1860,11 +1884,11 @@ can be done in user-space but should be implemented here to make it "simpler" :)
 
 =head2 RFC 2577 "FTP Security Considerations"
 
-	* the entire thing :)
+	* unimplemented
 
 =head2 RFC 2640 "Internationalization of the File Transfer Protocol"
 
-	* the entire thing :)
+	* unimplemented
 
 =head2 RFC 3659 "Extensions to FTP"
 
@@ -1874,7 +1898,11 @@ can be done in user-space but should be implemented here to make it "simpler" :)
 
 =head2 RFC 4217 "Securing FTP with TLS"
 
-	* the entire thing except for what is implemented in 2228 :)
+	* unimplemented except for what is implemented in 2228 :)
+
+=head2 RFC 5796 "FTP Command and Extension Registry"
+
+	* No need to implement this, it is for servers only
 
 =head1 SUPPORT
 
