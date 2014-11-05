@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.66.
+signed via the Module::Signature module, version 0.73.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,32 +14,36 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 161f66fa6c0458c8152b236e19d620c04b798d57 Build.PL
-SHA1 8fdcd821a6b25cccc9251f613d0bdf5bd7df3c88 Changes
-SHA1 eee6ceb75db3d8b684818e8e39a5496b3fcd8800 CommitLog
-SHA1 53c8c22c6635f886969e74338ab155e851727554 INSTALL
-SHA1 263360e99a0de4d587fedefe1a919dcf61af1d10 LICENSE
-SHA1 c362e0ae0fc32086365b9da119b2c58b16d9525c MANIFEST
-SHA1 9dfc07c5655b958e800189837f3ddd37ca050bfe MANIFEST.SKIP
-SHA1 cf1058d8e3faee1698631cb6cc78bc0fcf166bbf META.json
-SHA1 ec25affbc2a29dd82a56cb68e2a1b7d385ef1179 META.yml
-SHA1 bfed73cdd330c9908a00f7348dd79bc00d215269 Makefile.PL
-SHA1 bbe205d55778cd289d55d50f156fad8665bffde7 README
+SHA1 03271a2d52ee5b836aecab6c78081ef7ba0d9a1a AUTHOR_PLEDGE
+SHA1 5eac29c967aa25fd808bffa6c75daef57be4d2ba Build.PL
+SHA1 bade8f9a09e2cc4c388de5a6be22da7e799a853e Changes
+SHA1 22a9cba751f91009bdad2e0d455ccf7b538e213e CommitLog
+SHA1 d24d802ff62889381e55308d8ac328a427d131ee INSTALL
+SHA1 e6514e4bc5abd3d1a8c7bd2a782c2f8737b413e7 LICENSE
+SHA1 4ebb5004f2d73761342b8844938560151de10a88 MANIFEST
+SHA1 69b8a0accb85effa4bd5f4ea93e4f2386d10ac8b MANIFEST.SKIP
+SHA1 52439ac193166a01d70124c964ab36f712970e21 META.json
+SHA1 b8e3bcd3773d65d8070c702fc45e11781be5a4b2 META.yml
+SHA1 e925bc6f52d5e5175810f77735753a9b8605d015 Makefile.PL
+SHA1 635bb450c0cd114c21b6a71b874c87e43f62f071 README
+SHA1 0cca6a7125f3dc4da4e930a18c97e9072c3f7a9e cpanfile
 SHA1 fa544583afe3fa72e37bf80a1c4358052ee7c800 dist.ini
-SHA1 5e5af84d1eb400b1ebe54671da3acc00d9b3ebbb examples/feat.pl
-SHA1 e20cf3014863584c8f5f289af7af6731f2f32766 examples/get.pl
-SHA1 0d4b1b0e0abf9bba72b2adad835d1bdb77e4282f examples/ls.pl
-SHA1 6b05a61b831113fd2934e33f481e6257640c5c9a examples/put.pl
-SHA1 f95c86b888a65df0528a5753c93947de0a513ae8 lib/POE/Component/Client/SimpleFTP.pm
-SHA1 6aec31a8500261e4c809023919404c04f82cea77 lib/POE/Component/Client/SimpleFTP/Utils.pm
-SHA1 abe58196b1879d329f32d159c2320ab438e1b3dc t/00-compile.t
-SHA1 100e861ea766742db3fdb005398d9e54078ce0b2 t/000-report-versions-tiny.t
-SHA1 a65db0598d757e869a3071b553e1464ca9f91463 t/apocalypse.t
-SHA1 6a0fe593eb214460c630c228e70dedbdc56df806 t/utils.t
+SHA1 8f5b37ab256fdbcc08096fb65cf1e47abd0667c7 doap.xml
+SHA1 c8b45a99cd9567b185f22318b839ef70733a38b2 examples/feat.pl
+SHA1 9eba0c7487ea65802927503810fb2d3cda61d99d examples/get.pl
+SHA1 e2d58020f87c2bb5e53915c47a128bcf65ad3f6f examples/ls.pl
+SHA1 fccb42d4d15abf4a5575c1f3819283afb6bc3594 examples/put.pl
+SHA1 c95493193d528b75debcf6475bd180cf2095488f lib/POE/Component/Client/SimpleFTP.pm
+SHA1 6f6044ef7feb6254a3735fbe5e66679265e852fd lib/POE/Component/Client/SimpleFTP/Utils.pm
+SHA1 551a2df95448a30a403911967cb72665350cfaa3 t/00-compile.t
+SHA1 5c49ecd2bc81665ecee79d4663ce30a20077ba39 t/00-report-prereqs.dd
+SHA1 6a4cedc1b8e29a899411b51bdacc81d53b81e228 t/00-report-prereqs.t
+SHA1 76dabb34eeea1e05e12273b7a2c7dda323db0271 t/apocalypse.t
+SHA1 ef48e15bc37ac459638117324232de78522a9258 t/utils.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1
 
-iEYEARECAAYFAk3Bx60ACgkQGfr7vsGKgxxWMgCg0OVZmF0VfXcHlVgiKFBs5+0O
-I3sAn34uCD2k91e9eDgcspJH+1DToFgb
-=FRB9
+iEYEARECAAYFAlRZwoYACgkQGfr7vsGKgxy+6wCeIQDe/mqk9v8RK1n2+QsnWXa2
+JEIAnjXSVsd5f+cmTbyw11lB6BWgkqow
+=HWWC
 -----END PGP SIGNATURE-----

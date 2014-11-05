@@ -1,19 +1,16 @@
 #
 # This file is part of POE-Component-Client-SimpleFTP
 #
-# This software is copyright (c) 2011 by Apocalypse.
+# This software is copyright (c) 2014 by Apocalypse.
 #
 # This is free software; you can redistribute it and/or modify it under
 # the same terms as the Perl 5 programming language system itself.
 #
 use strict; use warnings;
 package POE::Component::Client::SimpleFTP;
-BEGIN {
-  $POE::Component::Client::SimpleFTP::VERSION = '0.003';
-}
-BEGIN {
-  $POE::Component::Client::SimpleFTP::AUTHORITY = 'cpan:APOCAL';
-}
+# git description: release-0.003-11-g9ec2c28
+$POE::Component::Client::SimpleFTP::VERSION = '0.004';
+our $AUTHORITY = 'cpan:APOCAL';
 
 # ABSTRACT: A simple FTP client library for POE
 
@@ -25,15 +22,37 @@ use POE::Wheel::ReadWrite;
 use POE::Filter::Stream;
 use POE::Filter::Line;
 use POE::Driver::SysRW;
-
 use Socket qw( INADDR_ANY AF_INET SOCK_STREAM unpack_sockaddr_in inet_ntoa );
 
 BEGIN {
 
+#pod =func DEBUG
+#pod
+#pod Enable this if you want to get debugging output. Do it like this:
+#pod
+#pod 	sub POE::Component::Client::SimpleFTP::DEBUG () { 1 }
+#pod 	use POE::Component::Client::SimpleFTP;
+#pod
+#pod The default is: false
+#pod
+#pod =cut
 
 	if ( ! defined &DEBUG ) { *DEBUG = sub () { 0 } }
 }
 
+#pod =attr alias
+#pod
+#pod The alias this component will use. You can send commands to the ftpd in 2 ways:
+#pod
+#pod 	my $ftp = POE::Component::Client::SimpleFTP->new( alias => "ftp", ... );
+#pod 	$poe_kernel->post( 'ftp', 'cd', 'foobar' );
+#pod
+#pod 	# Or, you can use the yield sub:
+#pod 	$ftp->yield( 'cd', 'foobar' );
+#pod
+#pod The default is: ftp
+#pod
+#pod =cut
 
 has alias => (
 	isa => 'Str',
@@ -41,6 +60,13 @@ has alias => (
 	default => 'ftp',
 );
 
+#pod =attr username
+#pod
+#pod The FTP username you will be sending to the server.
+#pod
+#pod required.
+#pod
+#pod =cut
 
 has username => (
 	isa => 'Str',
@@ -48,6 +74,13 @@ has username => (
 	required => 1,
 );
 
+#pod =attr password
+#pod
+#pod The FTP password you will be sending to the server.
+#pod
+#pod required.
+#pod
+#pod =cut
 
 has password => (
 	isa => 'Str',
@@ -55,6 +88,13 @@ has password => (
 	required => 1,
 );
 
+#pod =attr remote_addr
+#pod
+#pod The IP address of the FTP server to connect to. Can be a DNS hostname or IPv4/6 string.
+#pod
+#pod required.
+#pod
+#pod =cut
 
 has remote_addr => (
 	isa => 'Str',
@@ -62,6 +102,13 @@ has remote_addr => (
 	required => 1,
 );
 
+#pod =attr remote_port
+#pod
+#pod The port of the FTP server to connect to.
+#pod
+#pod The default is: 21
+#pod
+#pod =cut
 
 has remote_port => (
 	isa => 'Int',
@@ -69,6 +116,13 @@ has remote_port => (
 	default => 21,
 );
 
+#pod =attr local_addr
+#pod
+#pod The local IP address to bind to for all connections to the server.
+#pod
+#pod The default is: INADDR_ANY ( let the OS decide )
+#pod
+#pod =cut
 
 has local_addr => (
 	isa => 'Str',
@@ -76,6 +130,14 @@ has local_addr => (
 	default => INADDR_ANY,
 );
 
+#pod =attr local_port
+#pod
+#pod The local port to bind to for the control connection to the server. If you need to change the data connection's port, please
+#pod change the L</local_data_port> attribute.
+#pod
+#pod The default is: 0 ( let the OS decide )
+#pod
+#pod =cut
 
 has local_port => (
 	isa => 'Int',
@@ -83,6 +145,13 @@ has local_port => (
 	default => 0,
 );
 
+#pod =attr local_data_port
+#pod
+#pod The local port to bind to for the data connection to the server. Must be a different port than the L</local_port> attribute!
+#pod
+#pod The default is: 0 ( let the OS decide )
+#pod
+#pod =cut
 
 has local_data_port => (
 	isa => 'Int',
@@ -90,6 +159,14 @@ has local_data_port => (
 	default => 0,
 );
 
+#pod =attr tls_cmd
+#pod
+#pod A boolean value to enable/disable TLS encryption of the command connection. If you want to use this,
+#pod you must have L<POE::Component::SSLify> installed!
+#pod
+#pod The default is: false
+#pod
+#pod =cut
 
 has tls_cmd => (
 	isa => 'Bool',
@@ -98,6 +175,14 @@ has tls_cmd => (
 	default => 0,
 );
 
+#pod =attr tls_data
+#pod
+#pod A boolean value to enable/disable TLS encryption of the data connection. If you want to use this,
+#pod you must have L<POE::Component::SSLify> installed!
+#pod
+#pod The default is: false
+#pod
+#pod =cut
 
 has tls_data => (
 	isa => 'Bool',
@@ -106,6 +191,13 @@ has tls_data => (
 	default => 0,
 );
 
+#pod =attr timeout
+#pod
+#pod A value specifying the timeout in seconds for the initial connection to the FTP server.
+#pod
+#pod The default is: 120
+#pod
+#pod =cut
 
 has timeout => (
 	isa => 'Int',
@@ -113,6 +205,15 @@ has timeout => (
 	default => 120,
 );
 
+#pod =attr connection_mode
+#pod
+#pod Determine what connection mode we will be using when opening the data connection to the server. In "active" mode,
+#pod the server will be connecting to us. In "passive" mode we will be connecting to the server. You usually need "passive" mode
+#pod if you are behind a firewall.
+#pod
+#pod The default is: passive
+#pod
+#pod =cut
 
 {
 	use Moose::Util::TypeConstraints;
@@ -194,11 +295,11 @@ has state => (
 	is => 'rw',
 	default => 'connect',
 	init_arg => undef,
-	( DEBUG ? ( trigger => sub {
-		my( $self, $new, $old ) = @_;
-		warn "switching from state($old) to state($new)\n";
-		return;
-	} ) : () ),
+#	( DEBUG ? ( trigger => sub {
+#		my( $self, $new, $old ) = @_;
+#		warn "switching from state($old) to state($new)\n";
+#		return;
+#	} ) : () ),
 );
 
 # holds what "simple" command we are processing when state is 'simple_command'
@@ -206,6 +307,11 @@ has simple_command => (
 	isa => 'Str',
 	is => 'rw',
 	init_arg => undef,
+#	( DEBUG ? ( trigger => sub {
+#                my( $self, $new, $old ) = @_;
+#                warn "switching from simple_command($old) to simple_command($new)\n";
+#                return;
+#        } ) : () ),
 );
 
 # holds whatever data the command needs
@@ -214,6 +320,12 @@ has command_data => (
 	is => 'rw',
 	default => sub { {} },
 	init_arg => undef,
+#	( DEBUG ? ( trigger => sub {
+#                my( $self, $new, $old ) = @_;
+#use Data::Dumper::Concise;
+#                warn "switching from command_data(" . Dumper($old) . ") to command_data(" . Dumper($new) . ")\n";
+#                return;
+#        } ) : () ),
 );
 
 # translation from posted events to ftp commands
@@ -313,9 +425,9 @@ foreach my $cmd ( @complex_commands ) {
 			'data' => \@args,
 		} );
 		if ( $cmd =~ /^(?:ls|dir|list|nlst)$/ ) {
-			$self->prepare_listing;
+			$self->_prepare_listing;
 		} elsif ( $cmd =~ /^(?:get|put|retr|stor|stou)$/ ) {
-			$self->prepare_transfer;
+			$self->_prepare_transfer;
 		}
 
 		return;
@@ -346,7 +458,7 @@ foreach my $cmd ( qw( rename mv ) ) {
 	};
 }
 
-sub prepare_listing {
+sub _prepare_listing {
 	my $self = shift;
 
 	# do we need to set the TYPE?
@@ -355,11 +467,11 @@ sub prepare_listing {
 		$self->command( 'complex_type', 'TYPE', 'A' );
 	} else {
 		# Okay, proceed to start the data connection stuff
-		$self->start_data_connection;
+		$self->_start_data_connection;
 	}
 }
 
-sub prepare_transfer {
+sub _prepare_transfer {
 	my $self = shift;
 
 	# do we need to set the TYPE?
@@ -368,11 +480,11 @@ sub prepare_transfer {
 		$self->command( 'complex_type', 'TYPE', 'I' );
 	} else {
 		# Okay, proceed to start the data connection stuff
-		$self->start_data_connection;
+		$self->_start_data_connection;
 	}
 }
 
-sub start_data_connection {
+sub _start_data_connection {
 	my $self = shift;
 
 	# okay, we go ahead with the PASV/PORT command
@@ -380,7 +492,7 @@ sub start_data_connection {
 		$self->command( 'complex_pasv', 'PASV' );
 	} else {
 		# Okay, create our listening socket
-		$self->create_data_connection;
+		$self->_create_data_connection;
 	}
 }
 
@@ -403,6 +515,7 @@ foreach my $cmd ( qw( put stor stou ) ) {
 				if ( defined $self->data_rw ) {
 					$self->data_rw->put( $input );
 				} else {
+					# TODO maybe we shouldn't die here? Just warn and let the user handle the error?
 					die "got ${cmd}_data when we are not connected!";
 				}
 			} else {
@@ -429,7 +542,7 @@ foreach my $cmd ( qw( put stor stou ) ) {
 			if ( $self->command_data->{'cmd'} eq $cmd ) {
 				# kill the rw wheel, disconnecting from the server
 				if ( defined $self->data_rw ) {
-					$self->process_complex_closed;
+					$self->_process_complex_closed;
 				} else {
 					# maybe a timing issue, server killed the connection while this event was in the queue?
 					# then the data_rw_error event would have caught this and sent the appropriate error message
@@ -500,7 +613,7 @@ sub START {
 }
 
 # helper sub to simplify sending events to the master
-sub tell_master {
+sub _send_master {
 	my( $self, $event, @args ) = @_;
 
 	warn "telling master about event $event\n" if DEBUG;
@@ -527,6 +640,18 @@ sub _shutdown {
 	$poe_kernel->alias_remove( $self->alias );
 }
 
+#pod =method yield
+#pod
+#pod This method provides an alternative object based means of posting events to the component.
+#pod First argument is the event to post, following arguments are sent as arguments to the resultant post.
+#pod
+#pod 	my $ftp = POE::Component::Client::SimpleFTP->new( alias => "ftp", ... );
+#pod 	$ftp->yield( 'cd', 'foobar' );
+#pod
+#pod 	# equivalent to:
+#pod 	$poe_kernel->post( $ftp->alias, 'cd', 'foobar' );
+#pod
+#pod =cut
 
 sub yield {
 	my( $self, @args ) = @_;
@@ -543,7 +668,7 @@ event timeout_event => sub {
 	# Okay, we timed out doing something
 	if ( $self->state eq 'connect' ) {
 		# failed to connect to the server
-		$self->tell_master( 'connect_error', 0, 'timedout' );
+		$self->_send_master( 'connect_error', 0, 'timedout' );
 
 		# nothing else to do...
 		$self->_shutdown;
@@ -551,7 +676,7 @@ event timeout_event => sub {
 		# timed out waiting for the data connection
 
 		# since this is a pre-data-connection error, the complex command is done
-		$self->process_complex_error( 0, 'timedout' );
+		$self->_process_complex_error( 0, 'timedout' );
 		$self->state( 'idle' );
 	} else {
 		die "unknown state in timeout_event: " . $self->state;
@@ -585,7 +710,7 @@ event cmd_sf_error => sub {
 
 	warn "cmd_sf_error $operation $errnum $errstr\n" if DEBUG;
 
-	$self->tell_master( 'connect_error', 0, "$operation error $errnum: $errstr" );
+	$self->_send_master( 'connect_error', 0, "$operation error $errnum: $errstr" );
 
 	# nothing else to do...
 	$self->_shutdown;
@@ -598,19 +723,33 @@ event cmd_rw_input => sub {
 
 	warn "cmd_rw_input(" . $self->state . "): '$input'\n" if DEBUG;
 
+	# some ftpds are zany!
+#calling _ftpd_simple_command to process 221:Goodbye.
+#shutdown
+#switching from state(simple_command) to state(shutdown)
+#cmd_rw_input(shutdown): '500 OOPS: priv_sock_get_cmd'
+#calling _ftpd_shutdown to process 500:OOPS: priv_sock_get_cmd
+#Can't locate object method "_ftpd_shutdown" via package "POE::Component::Client::SimpleFTP" at /usr/local/share/perl/5.18.2/POE/Component/Client/SimpleFTP.pm line 790.
+	return if $self->state eq 'shutdown';
+
 	# parse the input according to RFC 959
 	# TODO put this code in POE::Filter::FTP or something?
 	my( $code, $line );
-	if ( $input =~ /^(\d\d\d)(\-?)(.+)$/ ) {
+	if ( $input =~ /^(\d\d\d)(\-?)(.*)$/ ) {
 		$code = $1;
 		my( $minus, $string ) = ( $2, $3 );
 		$string =~ s/^\s+//;
 		$string =~ s/\s+$//;
 
+		# handle multi-line replies
 		if ( length $minus ) {
-			# begin of multi-line reply
-			warn "begin of multi-line($code): '$string'\n" if DEBUG;
-			$self->input_buffer( $string );
+			if ( defined $self->input_buffer ) {
+				die "ftpd sent different multi-line codes!" if $self->input_buffer_code ne $code;
+				$self->input_buffer( $self->input_buffer . "\n" . $string );
+                        } else {
+				warn "begin of multi-line($code): '$string'\n" if DEBUG;
+				$self->input_buffer( $string );
+                        }
 			$self->input_buffer_code( $code );
 			return;
 		} else {
@@ -621,7 +760,7 @@ event cmd_rw_input => sub {
 					die "ftpd sent invalid reply: $input";
 				} else {
 					warn "end of multi-line: '$string'\n" if DEBUG;
-					$line = $self->input_buffer . "\n" . $input;
+					$line = $self->input_buffer . "\n" . $string;
 					$self->input_buffer( undef );
 				}
 			} else {
@@ -643,6 +782,19 @@ event cmd_rw_input => sub {
 
 	# process the input, depending on our state
 	my $subref = "_ftpd_" . $self->state;
+	if ( $self->state eq 'complex_data' ) {
+		# okay, we got input from the ftpd before the complex data is closed, so we buffer it...
+		if ( exists $self->command_data->{'cmd_pending'} ) {
+			# ftpd sent data faster than we could get the command!
+			warn "executing pending command data\n" if DEBUG;
+			$subref = '_ftpd_complex_done';
+		} else {
+			warn "buffering command data\n" if DEBUG;
+			$self->command_data->{'cmd_buffer'} = [$code, $line];
+			return;
+		}
+	}
+
 	warn "calling $subref to process $code:$line\n" if DEBUG;
 	$self->$subref( $code, $line );
 
@@ -654,7 +806,7 @@ event cmd_rw_error => sub {
 
 	warn "cmd_rw_error $operation $errnum $errstr\n" if DEBUG;
 
-	$self->tell_master( 'connect_error', 0, "$operation error $errnum: $errstr" );
+	$self->_send_master( 'connect_error', 0, "$operation error $errnum: $errstr" );
 
 	# nothing else to do...
 	$self->_shutdown;
@@ -695,7 +847,7 @@ sub _ftpd_connect {
 	my( $self, $code, $reply ) = @_;
 
 	if ( code_success( $code ) ) {
-		$self->tell_master( 'connected', $code, $reply );
+		$self->_send_master( 'connected', $reply );
 
 		# do we want TLS?
 		if ( $self->tls_cmd ) {
@@ -706,7 +858,7 @@ sub _ftpd_connect {
 			$self->command( 'user', 'USER', $self->username );
 		}
 	} else {
-		$self->tell_master( 'connect_error', $code, $reply );
+		$self->_send_master( 'connect_error', $code, $reply );
 
 		# nothing else to do...
 		$self->_shutdown;
@@ -718,7 +870,7 @@ sub _ftpd_tls_cmd {
 
 	if ( code_success( $code ) ) {
 		# Okay, time to SSLify the connection!
-		my $socket = $self->cmd_rw->get_input_handle();
+		my $socket = $self->cmd_rw->get_input_handle;
 		$self->cmd_rw( undef );
 
 		eval { $socket = POE::Component::SSLify::Client_SSLify( $socket, 'tlsv1' ) };
@@ -739,7 +891,7 @@ sub _ftpd_tls_cmd {
 		$self->command( 'user', 'USER', $self->username );
 	} else {
 		# server probably doesn't support AUTH TLS
-		$self->tell_master( 'login_error', $code, $reply );
+		$self->_send_master( 'login_error', $code, $reply );
 		$self->state( 'idle' );
 	}
 }
@@ -750,7 +902,7 @@ sub _ftpd_pbsz {
 	if ( code_success( $code ) ) {
 		$self->command( 'prot', 'PROT', 'P' );
 	} else {
-		$self->tell_master( 'login_error', $code, $reply );
+		$self->_send_master( 'login_error', $code, $reply );
 		$self->state( 'idle' );
 	}
 }
@@ -759,9 +911,13 @@ sub _ftpd_prot {
 	my( $self, $code, $reply ) = @_;
 
 	if ( code_success( $code ) ) {
-		$self->tell_master( 'authenticated' );
+		my $banner = $reply;
+		if ( exists $self->command_data->{'orig_banner'} ) {
+			$banner = (delete $self->command_data->{'orig_banner'}) . "\n" . $reply;
+		}
+		$self->_send_master( 'authenticated', $banner );
 	} else {
-		$self->tell_master( 'login_error', $code, $reply );
+		$self->_send_master( 'login_error', $code, $reply );
 	}
 
 	$self->state( 'idle' );
@@ -772,25 +928,28 @@ sub _ftpd_user {
 
 	if ( code_success( $code ) ) {
 		# no need for password ( probably anonymous account )
-		$self->prepare_tls_stuff;
+		$self->_prepare_tls_stuff( $reply );
 	} elsif ( code_intermediate( $code ) ) {
 		# send the password!
 		$self->command( 'password', 'PASS', $self->password );
 	} else {
-		$self->tell_master( 'login_error', $code, $reply );
+		$self->_send_master( 'login_error', $code, $reply );
 		$self->state( 'idle' );
 	}
 }
 
-sub prepare_tls_stuff {
-	my $self = shift;
+sub _prepare_tls_stuff {
+	my( $self, $reply ) = @_;
 
 	# do we need to setup the data channel TLS stuff?
 	if ( $self->tls_data ) {
+		# cache the original reply
+		$self->command_data->{'orig_banner'} = $reply;
+
 		# TODO is 0 a good default?
 		$self->command( 'pbsz', 'PBSZ', 0 );
 	} else {
-		$self->tell_master( 'authenticated' );
+		$self->_send_master( 'authenticated', $reply );
 		$self->state( 'idle' );
 	}
 }
@@ -799,9 +958,9 @@ sub _ftpd_password {
 	my( $self, $code, $reply ) = @_;
 
 	if ( code_success( $code ) ) {
-		$self->prepare_tls_stuff;
+		$self->_prepare_tls_stuff( $reply );
 	} else {
-		$self->tell_master( 'login_error', $code, $reply );
+		$self->_send_master( 'login_error', $code, $reply );
 		$self->state( 'idle' );
 	}
 }
@@ -819,7 +978,7 @@ sub _ftpd_simple_command {
 	if ( ! code_success( $code ) ) {
 		$event .= '_error';
 	}
-	$self->tell_master( $event, $code, $reply, @{ $self->command_data } );
+	$self->_send_master( $event, $code, $reply, @{ $self->command_data } );
 
 	$self->command_data( undef );
 	$self->state( 'idle' );
@@ -830,10 +989,10 @@ sub _ftpd_complex_type {
 
 	if ( code_success( $code ) ) {
 		$self->data_type( delete $self->command_data->{'type'} );
-		$self->start_data_connection;
+		$self->_start_data_connection;
 	} else {
 		# since this is a pre-data-connection error, the complex command is done
-		$self->process_complex_error( $code, $reply );
+		$self->_process_complex_error( $code, $reply );
 		$self->state( 'idle' );
 	}
 }
@@ -850,10 +1009,10 @@ sub _ftpd_complex_pasv {
 		$self->command_data->{'port'} = $data[4]*256 + $data[5];
 
 		# Okay, create our listening socket
-		$self->create_data_connection;
+		$self->_create_data_connection;
 	} else {
 		# since this is a pre-data-connection error, the complex command is done
-		$self->process_complex_error( $code, $reply );
+		$self->_process_complex_error( $code, $reply );
 		$self->state( 'idle' );
 	}
 }
@@ -863,15 +1022,15 @@ sub _ftpd_complex_port {
 
 	if ( code_success( $code ) ) {
 		# now, send the actual complex command :)
-		$self->process_complex_command;
+		$self->_process_complex_command;
 	} else {
 		# since this is a pre-data-connection error, the complex command is done
-		$self->process_complex_error( $code, $reply );
+		$self->_process_complex_error( $code, $reply );
 		$self->state( 'idle' );
 	}
 }
 
-sub create_data_connection {
+sub _create_data_connection {
 	my $self = shift;
 
 	# we now transition to the "complex" state
@@ -955,13 +1114,13 @@ event data_sf_connected => sub {
 
 	# do we need to send the actual command?
 	if ( $self->connection_mode eq 'passive' ) {
-		$self->process_complex_command;
+		$self->_process_complex_command;
 	}
 
 	return;
 };
 
-sub process_complex_command {
+sub _process_complex_command {
 	my $self = shift;
 
 	my $cmd = $self->command_data->{'cmd'};
@@ -988,7 +1147,7 @@ event data_sf_error => sub {
 
 	# some sort of error?
 	if ( $self->state eq 'complex_sf' ) {
-		$self->process_complex_error( undef, "$operation error $errnum: $errstr" );
+		$self->_process_complex_error( undef, "$operation error $errnum: $errstr" );
 	} else {
 		die "unexpected data_sf_error in wrong state: " . $self->state;
 	}
@@ -1000,21 +1159,27 @@ sub _ftpd_complex_start {
 	# actually process the "start" of the command
 	if ( code_preliminary( $code ) ) {
 		# let the master know it's ready to send/receive stuff!
-		$self->tell_master( $self->command_data->{'cmd'} . '_connected', @{ $self->command_data->{'data'} } );
+		$self->_send_master( $self->command_data->{'cmd'} . '_connected', @{ $self->command_data->{'data'} } );
 		$self->state( 'complex_data' );
 
 		# do we have any buffered data?
 		if ( exists $self->command_data->{'buffer'} ) {
 			warn "sending buffered chunks\n" if DEBUG;
 			foreach my $chunk ( @{ $self->command_data->{'buffer'} } ) {
-				$self->tell_master( $self->command_data->{'cmd'} . '_data', $chunk, @{ $self->command_data->{'data'} } );
+				$self->_send_master( $self->command_data->{'cmd'} . '_data', $chunk, @{ $self->command_data->{'data'} } );
 			}
 			delete $self->command_data->{'buffer'};
+
+			# check for server sending faster than we can process
+			if ( exists $self->command_data->{'cmd_pending'} ) {
+				warn "fixing pending command data\n" if DEBUG;
+				$self->state( 'complex_done' );
+			}
 		}
 	} elsif ( code_success( $code ) ) {
 		die "unexpected success for start of complex command: $code $reply";
 	} else {
-		$self->process_complex_error( $code, $reply );
+		$self->_process_complex_error( $code, $reply );
 	}
 }
 
@@ -1040,16 +1205,14 @@ sub _ftpd_complex_done {
 	if ( ! code_success( $code ) ) {
 		$event .= '_error';
 	}
-	$self->tell_master( $event, $code, $reply, @{ $self->command_data->{'data'} } );
+	$self->_send_master( $event, $code, $reply, @{ $self->command_data->{'data'} } );
 
 	# clear all data for this complex command
 	$self->state( 'idle' );
 	$self->command_data( undef );
-
-	# TODO maybe we got the complex reply *before* the RW is closed?
 }
 
-sub process_complex_error {
+sub _process_complex_error {
 	my( $self, $code, $reply ) = @_;
 
 	# go to the error state, so we can receive whatever the ftpd wants to send to us
@@ -1058,18 +1221,24 @@ sub process_complex_error {
 	$self->data_sf( undef );
 	$self->data_rw( undef );
 
-	$self->tell_master( $self->command_data->{'cmd'} . '_error', $code, $reply, @{ $self->command_data->{'data'} } );
+	$self->_send_master( $self->command_data->{'cmd'} . '_error', $code, $reply, @{ $self->command_data->{'data'} } );
 
 	# all done processing this complex command
 	$self->command_data( undef );
 }
 
-sub process_complex_closed {
+sub _process_complex_closed {
 	my $self = shift;
 
 	# Okay, we are done with this command!
 	$self->state( 'complex_done' );
 	$self->data_rw( undef );
+
+	# Did we buffer any commands?
+	if ( exists $self->command_data->{'cmd_buffer'} ) {
+		warn "executing buffered command reply\n" if DEBUG;
+		$self->_ftpd_complex_done( @{ delete $self->command_data->{'cmd_buffer'} } );
+	}
 
 	# TODO should we send an event_closed command? I think it's superfluous...
 }
@@ -1082,7 +1251,7 @@ event data_rw_input => sub {
 	# should only happen in complex state
 	if ( $self->state eq 'complex_data' ) {
 		# send it back to the master
-		$self->tell_master( $self->command_data->{'cmd'} . '_data', $input, @{ $self->command_data->{'data'} } );
+		$self->_send_master( $self->command_data->{'cmd'} . '_data', $input, @{ $self->command_data->{'data'} } );
 	} elsif ( $self->state eq 'complex_start' ) {
 		# oh boy, the server immediately sent us some data while we were processing the start
 		# that means we have to buffer it so we correctly send it *after* we send the connected event
@@ -1105,18 +1274,21 @@ event data_rw_error => sub {
 	warn "data_rw_error: $operation $errnum $errstr\n" if DEBUG;
 
 	# should only happen in complex state
-	if ( $self->state eq 'complex_data' ) {
+	if ( $self->state eq 'complex_start' ) {
+		# woah, sent the data faster than we started!
+		$self->command_data->{'cmd_pending'} = 1;
+	} elsif ( $self->state eq 'complex_data' ) {
 		# Is it a normal EOF or an error?
 		if ( $operation eq "read" and $errnum == 0 ) {
 			# only in the put state is this a real error
 			if ( $self->command_data->{'cmd'} =~ /^(?:put|stor|stou)$/ ) {
-				$self->process_complex_error( undef, "$operation error $errnum: $errstr" );
+				$self->_process_complex_error( undef, "$operation error $errnum: $errstr" );
 			} else {
 				# otherwise it was a listing/get which means the data stream is done
-				$self->process_complex_closed;
+				$self->_process_complex_closed;
 			}
 		} else {
-			$self->process_complex_error( undef, "$operation error $errnum: $errstr" );
+			$self->_process_complex_error( undef, "$operation error $errnum: $errstr" );
 		}
 	} else {
 		die "unexpected data_rw_error in wrong state: " . $self->state;
@@ -1134,7 +1306,7 @@ event data_rw_flushed => sub {
 	if ( $self->state eq 'complex_data' ) {
 		# This should only happen for put commands
 		if ( $self->command_data->{'cmd'} =~ /^(?:put|stor|stou)$/ ) {
-			$self->tell_master( $self->command_data->{'cmd'} . '_flushed', @{ $self->command_data->{'data'} } );
+			$self->_send_master( $self->command_data->{'cmd'} . '_flushed', @{ $self->command_data->{'data'} } );
 		} else {
 			die "unexpected data_rw_flushed for complex command:" . $self->command_data->{'cmd'};
 		}
@@ -1152,7 +1324,7 @@ sub _ftpd_rename_start {
 		# TODO should we send a rename_partial event? I think it's superfluous...
 		$self->command( 'rename_done', 'RNTO', $self->command_data->{'to'} );
 	} else {
-		$self->tell_master( 'rename_error', $code, $reply, $self->command_data->{'from'}, $self->command_data->{'to'} );
+		$self->_send_master( 'rename_error', $code, $reply, $self->command_data->{'from'}, $self->command_data->{'to'} );
 		$self->command_data( undef );
 		$self->state( 'idle' );
 	}
@@ -1165,7 +1337,7 @@ sub _ftpd_rename_done {
 	if ( ! code_success( $code ) ) {
 		$event .= '_error';
 	}
-	$self->tell_master( $event, $code, $reply, $self->command_data->{'from'}, $self->command_data->{'to'} );
+	$self->_send_master( $event, $code, $reply, $self->command_data->{'from'}, $self->command_data->{'to'} );
 
 	$self->command_data( undef );
 	$self->state( 'idle' );
@@ -1175,17 +1347,16 @@ no MooseX::POE::SweetArgs;
 __PACKAGE__->meta->make_immutable;
 1;
 
-
 __END__
+
 =pod
 
+=encoding UTF-8
+
 =for :stopwords Apocalypse cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee
-diff irc mailto metadata placeholders ftp
+diff irc mailto metadata placeholders metacpan ftp
 
-=encoding utf-8
-
-=for Pod::Coverage command EOL START BUILD tell_master create_data_connection prepare_listing prepare_tls_stuff prepare_transfer
-=for Pod::Coverage process_complex_closed process_complex_error start_data_connection
+=for Pod::Coverage command START BUILD INADDR_ANY
 
 =head1 NAME
 
@@ -1193,7 +1364,7 @@ POE::Component::Client::SimpleFTP - A simple FTP client library for POE
 
 =head1 VERSION
 
-  This document describes v0.003 of POE::Component::Client::SimpleFTP - released May 04, 2011 as part of POE-Component-Client-SimpleFTP.
+  This document describes v0.004 of POE::Component::Client::SimpleFTP - released November 04, 2014 as part of POE-Component-Client-SimpleFTP.
 
 =head1 SYNOPSIS
 
@@ -1241,11 +1412,18 @@ on the initial connection that you can tweak via setting L</timeout>.
 
 The following events may be sent to your session:
 
+=head3 connected
+
+This event is sent when the initial connection to the server is established. The connection is not yet finalized, so you aren't able to send
+commands yet!
+
+The first argument is the string banner that the server sent, if any.
+
 =head3 authenticated
 
 This event is sent when the entire login procedure is done. At this point you can send commands to the server.
 
-No arguments.
+The first argument is the string banner that the server sent, if any.
 
 =head3 connect_error
 
@@ -1801,6 +1979,19 @@ if you are behind a firewall.
 
 The default is: passive
 
+=head1 METHODS
+
+=head2 yield
+
+This method provides an alternative object based means of posting events to the component.
+First argument is the event to post, following arguments are sent as arguments to the resultant post.
+
+	my $ftp = POE::Component::Client::SimpleFTP->new( alias => "ftp", ... );
+	$ftp->yield( 'cd', 'foobar' );
+
+	# equivalent to:
+	$poe_kernel->post( $ftp->alias, 'cd', 'foobar' );
+
 =head1 FUNCTIONS
 
 =head2 DEBUG
@@ -1811,17 +2002,6 @@ Enable this if you want to get debugging output. Do it like this:
 	use POE::Component::Client::SimpleFTP;
 
 The default is: false
-
-=head2 yield
-
-This method provides an alternative object based means of posting events to the component.
-First argument is the event to post, following arguments are sent as arguments to the resultant post.
-
-	my $ftp = POE::Component::Client::SimpleFTP->new( ... );
-	$ftp->yield( 'cd', 'foobar' );
-
-	# equivalent to:
-	$poe_kernel->post( $ftp->alias, 'cd', 'foobar' );
 
 =head1 TLS support
 
@@ -1921,6 +2101,14 @@ in addition to those websites please use your favorite search engine to discover
 
 =item *
 
+MetaCPAN
+
+A modern, open-source CPAN search engine, useful to view POD in HTML format.
+
+L<http://metacpan.org/release/POE-Component-Client-SimpleFTP>
+
+=item *
+
 Search CPAN
 
 The default CPAN search engine, useful to view POD in HTML format.
@@ -1939,7 +2127,7 @@ L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=POE-Component-Client-SimpleFTP>
 
 AnnoCPAN
 
-The AnnoCPAN is a website that allows community annonations of Perl module documentation.
+The AnnoCPAN is a website that allows community annotations of Perl module documentation.
 
 L<http://annocpan.org/dist/POE-Component-Client-SimpleFTP>
 
@@ -1965,7 +2153,7 @@ CPANTS
 
 The CPANTS is a website that analyzes the Kwalitee ( code metrics ) of a distribution.
 
-L<http://cpants.perl.org/dist/overview/POE-Component-Client-SimpleFTP>
+L<http://cpants.cpanauthors.org/dist/overview/POE-Component-Client-SimpleFTP>
 
 =item *
 
@@ -1979,7 +2167,7 @@ L<http://www.cpantesters.org/distro/P/POE-Component-Client-SimpleFTP>
 
 CPAN Testers Matrix
 
-The CPAN Testers Matrix is a website that provides a visual way to determine what Perls/platforms PASSed for a distribution.
+The CPAN Testers Matrix is a website that provides a visual overview of the test results for a distribution on various Perls/platforms.
 
 L<http://matrix.cpantesters.org/?dist=POE-Component-Client-SimpleFTP>
 
@@ -2038,9 +2226,9 @@ The code is open to the world, and available for you to hack on. Please feel fre
 with it, or whatever. If you want to contribute patches, please send me a diff or prod me to pull
 from your repository :)
 
-L<http://github.com/apocalypse/perl-poe-component-simpleftp>
+L<https://github.com/apocalypse/perl-poe-component-simpleftp>
 
-  git clone git://github.com/apocalypse/perl-poe-component-simpleftp.git
+  git clone https://github.com/apocalypse/perl-poe-component-simpleftp.git
 
 =head1 AUTHOR
 
@@ -2048,35 +2236,33 @@ Apocalypse <APOCAL@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Apocalypse.
+This software is copyright (c) 2014 by Apocalypse.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
-The full text of the license can be found in the LICENSE file included with this distribution.
+The full text of the license can be found in the
+F<LICENSE> file included with this distribution.
 
 =head1 DISCLAIMER OF WARRANTY
 
-BECAUSE THIS SOFTWARE IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
-FOR THE SOFTWARE, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT
-WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER
-PARTIES PROVIDE THE SOFTWARE "AS IS" WITHOUT WARRANTY OF ANY KIND,
-EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE
-SOFTWARE IS WITH YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU ASSUME
-THE COST OF ALL NECESSARY SERVICING, REPAIR, OR CORRECTION.
+THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
+OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
 
 IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
-WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENCE, BE LIABLE
-TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE
-SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
-RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
-FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
-SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGES.
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
 
 =cut
-

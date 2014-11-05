@@ -2,7 +2,7 @@
 #
 # This file is part of POE-Component-Client-SimpleFTP
 #
-# This software is copyright (c) 2011 by Apocalypse.
+# This software is copyright (c) 2014 by Apocalypse.
 #
 # This is free software; you can redistribute it and/or modify it under
 # the same terms as the Perl 5 programming language system itself.
@@ -98,7 +98,7 @@ sub START {
 event _child => sub { return };
 
 event connected => sub {
-	my $self = shift;
+	my( $self, $banner ) = @_;
 
 	# do nothing hah
 
@@ -122,7 +122,7 @@ event login_error => sub {
 };
 
 event authenticated => sub {
-	my $self = shift;
+	my( $self, $banner ) = @_;
 
 	# Okay, get the list!
 	$self->ftp->yield( 'ls', $self->path );
